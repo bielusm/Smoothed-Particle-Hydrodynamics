@@ -152,10 +152,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\common.h" />
+    <ClInclude Include="..\src\icosphere.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\icosphere.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\Q1.cpp" />
   </ItemGroup>
