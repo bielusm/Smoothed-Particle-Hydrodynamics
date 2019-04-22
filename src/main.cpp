@@ -2,7 +2,6 @@
 // Modified to isolate the main program and use GLM
 
  #include "common.h"
-
 #include <iostream>
 
 // Create a NULL-terminated string by reading the provided file
@@ -109,8 +108,8 @@ main( int argc, char **argv )
 {
    glutInit( &argc, argv );
    glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
-   glutInitWindowSize( 640, 640 );
-   glutInitContextVersion( 3, 2 );
+   glutInitWindowSize( WIDTH, HEIGHT );
+   glutInitContextVersion( 3, 3 );
    glutInitContextProfile( GLUT_CORE_PROFILE );
    glutCreateWindow( WINDOW_TITLE );
 
