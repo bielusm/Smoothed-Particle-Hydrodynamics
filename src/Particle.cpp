@@ -86,7 +86,7 @@ glm::vec3 Particle::fPressure()
 		b = Wgradient((Ai - Aj).length() / hVal);
 		fPressure += a * b;
 	}
-	fPressure *= dPi;
+	fPressure *= -dPi;
 	//pointless division by pressurePi
 	fPressure = -mj / dPi * fPressure;
 	return fPressure;
@@ -99,7 +99,6 @@ glm::vec3 Particle::fViscosity()
 	for (Particle *p : neighbors)
 	{
 		glm::vec3 pj = p->dPi;
-		//might not be vi, be careful initalizing localVelocity
 		glm::vec3 vj = p->localVelocity;
 		glm::vec3 vij = vi - vj;
 		glm::vec3 xij = (pos - p->pos);
@@ -188,9 +187,10 @@ void Particle::CalcPosition(float dt)
 {
 	pos += dt * localVelocity;
 
-	if (pos.y < -1.0f)
+	if (pos.y < -20.0f)
 	{
-		pos.y = -1.0f;
+		localVelocity.y = -localVelocity.y/2;
+		pos.y = -20.0f;
 	}
 	}
 
