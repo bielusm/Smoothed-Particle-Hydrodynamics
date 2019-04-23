@@ -11,20 +11,17 @@ class Grid
 	};
 public:
 	Grid() = default;
-	Grid(float left, float right, float top, float bottom, float front, float back);
+	Grid(float left, float right, float top, float bottom);
 	~Grid();
-	glm::ivec3 Grid::updateCoord(int index, glm::ivec3 gridCoords, glm::vec3 newPos);
-	glm::ivec3 Grid::normalizeCoords(glm::vec3 pos);
+	glm::ivec2 Grid::updateCoord(int index, glm::ivec2 gc, glm::vec2 newPos);
+	glm::ivec2 Grid::normalizeCoords(glm::vec2 pos);
 	void makeGrid(std::vector<Particle>& particles);
-	bool inBounds(glm::vec3);
 	std::vector<int> neighborIndices(Particle p);
-
+	bool Grid::inBounds(glm::vec2 p);
 private: 
-	Indices ***grid;
+	Indices **grid;
 
-	
-
-	float left, right, top, bottom, front, back;
-	int width, height, depth;
+	float left, right, top, bottom;
+	int width, height;
 };
 

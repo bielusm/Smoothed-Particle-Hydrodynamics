@@ -4,23 +4,18 @@
 
 
 //from https://stackoverflow.com/questions/10238699/dynamically-allocating-3d-array
-Grid::Grid(float left, float right, float top, float bottom, float front, float back)
-	:left(left), right(right), top(top), bottom(bottom), front(front), back(back)
+Grid::Grid(float left, float right, float top, float bottom)
+	:left(left), right(right), top(top), bottom(bottom)
 {
-	 width = (int)(1 + abs(right - left) / hVal);
-	 height = (int)(1 + abs(top - bottom) / hVal);
-	 depth = (int)(1 + abs(front - back) / hVal);
-	 std::cout << "Making grid\n";
-	grid = new Indices **[width];
-	for (int i =0; i < width; i++)
+	width = (int)(1 + abs(right - left) / hVal);
+	height = (int)(1 + abs(top - bottom) / hVal);
+	std::cout << "Making grid\n";
+	grid = new Indices *[width];
+	for (int i = 0; i < width; i++)
 	{
-		grid[i] = new Indices*[height];
-		for (int j = 0; j < height; j++)
-		{
-			grid[i][j] = new Indices[depth];
-		}
+		grid[i] = new Indices[height];
 	}
-	
+
 }
 
 Grid::~Grid()
@@ -36,29 +31,28 @@ Grid::~Grid()
 	delete[] grid;
 }
 
-glm::ivec3 Grid::normalizeCoords(glm::vec3 pos)
+glm::ivec2 Grid::normalizeCoords(glm::vec2 pos)
 {
 
 	float xRatio = (left - right)/width;
-	if (pos.x < left || pos.x > right || pos.y < top || pos.y > bottom || pos.z < front || pos.z > back)
-		return glm::vec3(-1,-1,-1);
+	if (pos.x < left || pos.x > right || pos.y < top || pos.y > bottom)
+		return glm::vec2(-1,-1);
 	float size = left + right;
 	int x = (int)((pos.x +right/hVal));
 	int y = (int)((pos.y+bottom) / hVal);
-	int z = (int)((pos.z+back) / hVal);
-	return glm::ivec3(x, y, z);
+	return glm::ivec2(x, y);
 }
 
-glm::ivec3 Grid::updateCoord(int index, glm::ivec3 gc, glm::vec3 newPos)
+glm::ivec2 Grid::updateCoord(int index, glm::ivec2 gc, glm::vec2 newPos)
 {
-	glm::ivec3 pos = normalizeCoords(newPos);
+	glm::ivec2 pos = normalizeCoords(newPos);
 	if (glm::all(glm::equal(gc, pos))|| gc.x <0)
 		return gc;
 	else
 	{
 		bool found = false;
 
-		std::vector<int> &indices = grid[gc.x][gc.y][gc.z].index;
+		std::vector<int> &indices = grid[gc.x][gc.y].index;
 		for (int i = 0; i < indices.size(); i++)
 		{
 			if (indices[i] == index)
@@ -74,7 +68,7 @@ glm::ivec3 Grid::updateCoord(int index, glm::ivec3 gc, glm::vec3 newPos)
 		}
 		if (pos.x < 0)
 			return glm::ivec3(-1, -1, -1);
-		grid[pos.x][pos.y][pos.z].index.push_back(index);
+		grid[pos.x][pos.y].index.push_back(index);
 		return pos;	
 	}
 
@@ -85,10 +79,10 @@ void Grid::makeGrid(std::vector<Particle>& particles)
 {
 	for (Particle & p : particles)
 	{
-		glm::ivec3 pos = normalizeCoords(p.pos);
+		glm::ivec2 pos = normalizeCoords(p.pos);
 		if (pos.x > -1)
 		{
-			grid[pos.x][pos.y][pos.z].index.push_back(p.index);
+			grid[pos.x][pos.y].index.push_back(p.index);
 			p.gridCoords = pos;
 		}
 		else
@@ -97,26 +91,25 @@ void Grid::makeGrid(std::vector<Particle>& particles)
 		}
 	}
 }
-bool Grid::inBounds(glm::vec3 p )
+bool Grid::inBounds(glm::vec2 p )
 {
-	return (p.x > 0 && p.x < width && p.y > 0 && p.y < height && p.z > 0 && p.z < depth);
+	return (p.x > 0 && p.x < width && p.y > 0 && p.y < height);
 }
 
 std::vector<int> Grid::neighborIndices(Particle p)
 {
 	std::vector<int>neighbors;
-	glm::ivec3 gc = p.gridCoords;
+	glm::ivec2 gc = p.gridCoords;
 	if (gc.x < 0)
 		return neighbors;
 	else
 	{
 		for (int x = gc.x-1; x < gc.x+1; x++)
 			for(int y = gc.y-1; y < gc.y+1;y++)
-				for (int z = gc.z-1; z < gc.z+1; z++)
 				{
-					if (inBounds(glm::vec3(x, y, z)))
+					if (inBounds(glm::vec2(x, y)))
 					{
-						std::vector <int> index = grid[x][y][z].index;
+						std::vector <int> index = grid[x][y].index;
 						for (int i = 0; i < index.size(); i++)
 						{
 							if (index[i] != p.index)

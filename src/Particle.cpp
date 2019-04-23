@@ -3,17 +3,18 @@
 #include "glm\glm.hpp"
 #include "Particle.h"
 #define d 3 //3 dimensionns
-#define p0 998.29f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
+#define p0 100.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 #define k 3.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf table 3.2
 #define vis 3.5f //from  https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
-#define g glm::vec3(0.0f,-9.81f,0.0f)
+#define g glm::vec2(0.0f,-9.81f)
+#define absorbtion 10.0f
 
 //IHMSEN M., CORNELIS J., SOLENTHALER B., HORVATH C., TESCHNER M.: Implicit incompressible SPH.IEEE
 //Transactions on Visualization and Computer Graphicss
 //found in https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf
 const float mj = pow(2.0f / 3.0f * hVal, 3)*p0;
 
-Particle::Particle(glm::vec3 pos, glm::vec3 localVelocity, int index, float size)
+Particle::Particle(glm::vec2 pos, glm::vec2 localVelocity, int index, float size)
 	:pos(pos), localVelocity(localVelocity), index(index)
 {
 }
@@ -28,22 +29,21 @@ void Particle::CalcPressure()
 	}
 	else
 	{
-		dPi = { 1,1,1 };
-		pressurePi = { 1,1,1 };
+		dPi = { 1,1};
+		pressurePi = { 1,1 };
 	}
 }
 
-glm::vec3 Particle::PressurePi(glm::vec3 pi)
+glm::vec2 Particle::PressurePi(glm::vec2 pi)
 {
 	float x, y, z;
 	x = pow(pi.x / p0, 7);
 	y = pow(pi.y / p0, 7);
-	z = pow(pi.z / p0, 7);
-	glm::vec3 pressurePi(x, y, z);
+	glm::vec2 pressurePi(x, y);
 	return k * pressurePi - 1.0f;
 }
 
-glm::vec3 Particle::DensityPi()
+glm::vec2 Particle::DensityPi()
 {
 
 	//Algorithm 1 2014 SPH STAR
@@ -56,10 +56,38 @@ glm::vec3 Particle::DensityPi()
 	return Pi;
 }
 
-void Particle::CalcForces()
+//void Particle::CalcForces()
+//{
+//	Fi = fPressure() + fViscosity() + fOther();
+//}
+
+void Particle::CalcImmediateVelocity(float dt)
 {
-	Fi = fPressure() + fViscosity() + fOther();
+	glm::vec2 fVisG = fViscosity() + fOther();
+	immediateVel = localVelocity + dt * (fVisG / mj);
+	
 }
+
+void Particle::CalcImmediateDensity(float dt)
+{
+	glm::vec2 sum(0, 0);
+
+	for (Particle *p : neighbors)
+	{
+		float xij = glm::length(pos - p->pos);
+		float a;
+		glm::vec2 b(0,0);
+		a = mj * W(xij / hVal);
+
+		for (Particle *p : neighbors)
+		{
+			b += (immediateVel - p->immediateVel)*Wgradient(xij / hVal);
+		}
+		sum += a + dt * b;
+	}
+
+}
+
 //https://en.wikipedia.org/wiki/Smoothed-particle_hydrodynamics#Operators
 //equation for pressure gradient
 //also
@@ -67,52 +95,50 @@ void Particle::CalcForces()
 //equation 6 and algorithm 1
 //now https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 
-glm::vec3 Particle::fPressure()
+void Particle::fPressure()
 {
 	float sum = 0;
-	glm::vec3 Pi = dPi;
-	glm::vec3 Ai = pressurePi;
-	glm::vec3 Pi2(pow(Pi.x, 2),pow(Pi.y,2),pow(Pi.z,2));
-	glm::vec3 Pj;
-	glm::vec3 Pj2;
-	glm::vec3 a;
+	glm::vec2 Pi = dPi;
+	glm::vec2 Ai = pressurePi;
+	glm::vec2 Pi2(pow(Pi.x, 2),pow(Pi.y,2));
+	glm::vec2 Pj;
+	glm::vec2 Pj2;
+	glm::vec2 a;
 	float  b;
-	glm::vec3 fPressure = { 0.0f,0.0f,0.0f };
+	pressureForce = { 0.0f,0.0f };
 	for (Particle *p : neighbors)
 	{
-		glm::vec3 Aj = p->pressurePi;
+		glm::vec2 Aj = p->pressurePi;
 		 Pj = p->dPi;
-		Pj2 = glm::vec3(pow(Pj.x, 2), pow(Pj.y, 2), pow(Pj.z, 2));
+		Pj2 = glm::vec2(pow(Pj.x, 2), pow(Pj.y, 2));
 
 		a =  (Ai / Pi2 + Aj / Pj2)*mj;
 		b = Wgradient(glm::length(pos-p->pos) / hVal) ;
-		fPressure += a * b;
+		pressureForce += a * b;
 	}
-	fPressure *= -dPi;
-	//pointless division by pressurePi
+	pressureForce *= -dPi;
 	//fPressure = -mj / dPi * fPressure;
-	return fPressure;
 }
 
-glm::vec3 Particle::fViscosity()
+glm::vec2 Particle::fViscosity()
 {
-	glm::vec3 sum(0.0f, 0.0f, 0.0f);
-	glm::vec3 vi = localVelocity;
+	glm::vec2 sum(0.0f, 0.0f);
+	glm::vec2 vi = localVelocity;
 	for (Particle *p : neighbors)
 	{
-		glm::vec3 pj = p->dPi;
-		glm::vec3 vj = p->localVelocity;
-		glm::vec3 vij = vi - vj;
-		glm::vec3 xij = (pos - p->pos);
+		glm::vec2 pj = p->dPi;
+		glm::vec2 vj = p->localVelocity;
+		glm::vec2 vij = vi - vj;
+		glm::vec2 xij = (pos - p->pos);
 		/*sum += mj / pj * vij * 
 		(xij * Wgradient(glm::length(xij)/ hVal)) /
 			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));*/
-		sum += vij * mj / pj * WLaplacian(glm::length(xij)/hVal);
+		sum += vij * mj / p0 * WLaplacian(glm::length(xij)/hVal);
 	}
 	return vis * sum;
 }
 
-glm::vec3 Particle::fOther()
+glm::vec2 Particle::fOther()
 {
 	return p0* g;
 }
@@ -183,13 +209,32 @@ float Particle::Wgradient(float q)
 
 void Particle::CalcVelocity(float dt)
 {
-		//Fi.z = 0;
-		localVelocity += dt * (Fi) / mj;
+		localVelocity = immediateVel +  dt * (pressureForce) / mj;
 }
 
 void Particle::CalcPosition(float dt)
 {
 	pos += dt * localVelocity;
+	if (pos.x < -10.0f)
+	{
+		pos.x = -10.0f;
+		localVelocity.x = -localVelocity.x / absorbtion;
+	}
+	else if (pos.x > 10.0f)
+	{
+		pos.x = 10.0f;
+		localVelocity.x = -localVelocity.x / absorbtion;
+	}
+	if (pos.y < -10.0f)
+	{
+		pos.y = -10.0f;
+		localVelocity.y = -localVelocity.x / absorbtion;
+	}
+	if (pos.y > 20.0f)
+	{
+		pos.y = 20.0f;
+		localVelocity.y = -localVelocity.x / absorbtion;
+	}
 }
 
 

@@ -10,7 +10,7 @@
 #include "ParticleContainer.h"
 #include "Particle.h" //for hval maybe should have a header for param
 
-#define MAXPARTICLES 2000
+#define MAXPARTICLES 500
 
 
 static const GLfloat quad[]= {
@@ -75,7 +75,7 @@ init()
    glBufferData(GL_ARRAY_BUFFER, MAXPARTICLES * sizeof(GLfloat), NULL, GL_STATIC_DRAW);
    vPos = glGetAttribLocation(program, "vPos");
    glEnableVertexAttribArray(vPos);
-   glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+   glVertexAttribPointer(vPos, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
    
    prevTimeMs = glutGet(GLUT_ELAPSED_TIME);
 

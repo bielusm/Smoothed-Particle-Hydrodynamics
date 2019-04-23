@@ -10,39 +10,46 @@ class Particle
 {
 public:
 	Particle() = default;
-	Particle(glm::vec3 pos, glm::vec3 localVelocity, int index, float size);
+	Particle(glm::vec2 pos, glm::vec2 localVelocity, int index, float size);
 	~Particle();
 
 	float W(float q);
 	float Wgradient(float q);
 	float WLaplacian(float q);
 	
-	glm::vec3 PressurePi(glm::vec3 pi);
-	glm::vec3 Particle::DensityPi();
+	glm::vec2 PressurePi(glm::vec2 pi);
+	glm::vec2 Particle::DensityPi();
 	void clear();
 	void addNeighbor(Particle *p);
 	void CalcForces();
 
-	glm::vec3 Particle::fPressure();
-	glm::vec3 fViscosity();
-	glm::vec3 Particle::fOther();
+	void CalcImmediateVelocity(float dt);
+
+	void CalcImmediateDensity(float dt);
+
+	void Particle::fPressure();
+	glm::vec2 fViscosity();
+	glm::vec2 Particle::fOther();
 	
 
 	
 	void Particle::CalcVelocity(float dt);
 	void Particle::CalcPosition(float dt);
 	
-	glm::vec3 localVelocity;
-
+	glm::vec2 localVelocity;
+	glm::vec2 immediateVel;
 	void CalcPressure();
-	glm::vec3 dPi;
+	glm::vec2 idPi;
+	glm::vec2 dPi;
 	std::vector<Particle*> neighbors;
-	glm::vec3 pos;
+	glm::vec2 pos;
 	float size;
-	glm::vec3 Fi;
-	glm::vec3 pressurePi;
-	glm::ivec3 gridCoords;
+	glm::vec2 Fi;
+	glm::vec2 pressureForce;
+	glm::vec2 pressurePi;
+	glm::ivec2 gridCoords;
 	int index;
+
 
 
 
