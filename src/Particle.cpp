@@ -84,7 +84,7 @@ glm::vec3 Particle::fPressure()
 		 Pj = p->dPi;
 		Pj2 = glm::vec3(pow(Pj.x, 2), pow(Pj.y, 2), pow(Pj.z, 2));
 
-		a = mj * (Ai / Pi2 + Aj / Pj2);
+		a =  (Ai / Pi2 + Aj / Pj2)*mj;
 		b = Wgradient(glm::length(pos-p->pos) / hVal) ;
 		fPressure += a * b;
 	}
@@ -97,7 +97,6 @@ glm::vec3 Particle::fPressure()
 glm::vec3 Particle::fViscosity()
 {
 	glm::vec3 sum(0.0f, 0.0f, 0.0f);
-	return sum;
 	glm::vec3 vi = localVelocity;
 	for (Particle *p : neighbors)
 	{
@@ -118,14 +117,6 @@ glm::vec3 Particle::fOther()
 {
 	return p0* g;
 }
-
-//glm::vec3 Particle::W(glm::vec3 v)
-//{
-//	return glm::vec3(
-//		W(v.x),
-//		W(v.y),
-//		W(v.z));
-//}
 
 float Particle::W(float q)
 {
@@ -149,13 +140,25 @@ float Particle::W(float q)
 	return wq;
 }
 
-glm::vec3 Particle::Wgradient(glm::vec3 v)
+float Particle::WLaplacian(float q)
 {
-	return glm::vec3(
-		Wgradient(abs(v.x)),
-		Wgradient(abs(v.y)),
-		Wgradient(abs(v.z)));
+	float fq;
+	if (0 < q && q < 1)
+	{
+		fq = 3 * q - 2;
+	}
+	else if (1 <= q && q < 2)
+	{
+		fq = 3 * (2 - q);
+	}
+	else
+	{
+		return 0;
+	}
+	float wq = (1.0f / pow(hVal, d))*3.0f / (2.0f*M_PI)*fq;
+	return wq;
 }
+
 //I am just taking the derivative or maybe partial derivative of W (m4 cubic spline) i am not sure if this is correct
 //derived from https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf eq 5
 float Particle::Wgradient(float q)

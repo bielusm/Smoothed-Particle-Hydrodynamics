@@ -15,7 +15,8 @@ public:
 
 	float W(float q);
 	float Wgradient(float q);
-
+	float WLaplacian(float q);
+	
 	glm::vec3 PressurePi(glm::vec3 pi);
 	glm::vec3 Particle::DensityPi();
 	void clear();
@@ -25,7 +26,6 @@ public:
 	glm::vec3 Particle::fPressure();
 	glm::vec3 fViscosity();
 	glm::vec3 Particle::fOther();
-	glm::vec3 Wgradient(glm::vec3);
 	
 
 	
