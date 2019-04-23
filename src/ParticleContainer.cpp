@@ -6,9 +6,10 @@
 ParticleContainer::ParticleContainer(int MAXPARTICLES)
 	: MAXPARTICLES(MAXPARTICLES)
 {
+	grid = new Grid(-50.0f, 50.0f, -50.0f, 50.0f, -50.0f, 50.0f);
 	float neg = 1;
 
-
+	int index = 0;
 	for (int i = 0; i < MAXPARTICLES / 2; i++)
 	{
 		neg = -neg;
@@ -16,7 +17,8 @@ ParticleContainer::ParticleContainer(int MAXPARTICLES)
 		float y = 2.1f;
 		glm::vec3 pos(x, y, 1);
 		glm::vec3 vel(-50.0f,0.0f, 0.0f);
-		particles.push_back(Particle(pos, vel, 5.0f, 1.0f));
+		particles.push_back(Particle(pos, vel, index, 1.0f));
+		index++;
 	}
 	for (int i = 0; i < MAXPARTICLES / 2; i++)
 	{
@@ -25,8 +27,11 @@ ParticleContainer::ParticleContainer(int MAXPARTICLES)
 		float y = 2.0f;
 		glm::vec3 pos(x, y, 1);
 		glm::vec3 vel(50.0f, 0.0f, 0);
-		particles.push_back(Particle(pos, vel, 5.0f, 1.0f));
+		particles.push_back(Particle(pos, vel, index, 1.0f));
+		index++;
 	}
+	grid->makeGrid(particles);
+
 }
 
 
@@ -74,22 +79,22 @@ void ParticleContainer::updateParticles(float dt)
 			stepVal = stepVal / 1000.0f; //sec to milisec
 			p.CalcVelocity(stepVal);
 			p.CalcPosition(stepVal);
+			glm::ivec3 gc  = grid->updateCoord(p.index, p.gridCoords, p.pos);
+			p.gridCoords = gc;
 		}
 	}
 }
 
 void ParticleContainer::findNeighbors(Particle &p, int pIndex)
 {
-	for (int i = 0; i < MAXPARTICLES; i++)
+	std::vector<int> indices = grid->neighborIndices(p);
+	for (int i = 0; i < indices.size(); i++)
 	{
-		if (i != pIndex)
-		{
-			Particle *j = &particles[i];
+			Particle *j = &particles[indices[i]];
 			if (glm::distance(p.pos, j->pos) < hVal)
 			{
 				p.addNeighbor(j);
 			}
-		}
 
 	}
 }
@@ -106,6 +111,7 @@ void ParticleContainer::getPositions(std::vector<GLfloat> &positions)
 }
 ParticleContainer::~ParticleContainer()
 {
+	delete grid;
 }
 
 

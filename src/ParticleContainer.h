@@ -3,7 +3,7 @@
 #include "common.h"
 #include <vector>
 #include "glm\glm.hpp"
-
+#include "Grid.h"
 class ParticleContainer
 {
 public:
@@ -14,5 +14,7 @@ public:
 	void getPositions(std::vector<GLfloat> &positions);
 	~ParticleContainer();
 	std::vector <Particle> particles;
+
+	Grid *grid;
 };
 

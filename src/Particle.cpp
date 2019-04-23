@@ -1,5 +1,5 @@
 //find new m4 kernel
-
+#include <iostream>
 #include "glm\glm.hpp"
 #include "Particle.h"
 #define d 3 //3 dimensionns
@@ -13,8 +13,8 @@
 //found in https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf
 const float mj = pow(2.0f / 3.0f * hVal, 3)*p0;
 
-Particle::Particle(glm::vec3 pos, glm::vec3 localVelocity, float life, float size)
-	:pos(pos), localVelocity(localVelocity), life(life), size(size)
+Particle::Particle(glm::vec3 pos, glm::vec3 localVelocity, int index, float size)
+	:pos(pos), localVelocity(localVelocity), index(index)
 {
 }
 
@@ -65,6 +65,8 @@ void Particle::CalcForces()
 //also
 //https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf
 //equation 6 and algorithm 1
+//now https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
+
 glm::vec3 Particle::fPressure()
 {
 	float sum = 0;
@@ -83,18 +85,19 @@ glm::vec3 Particle::fPressure()
 		Pj2 = glm::vec3(pow(Pj.x, 2), pow(Pj.y, 2), pow(Pj.z, 2));
 
 		a = mj * (Ai / Pi2 + Aj / Pj2);
-		b = Wgradient((Ai - Aj).length() / hVal);
+		b = Wgradient(glm::length(pos-p->pos) / hVal) ;
 		fPressure += a * b;
 	}
 	fPressure *= -dPi;
 	//pointless division by pressurePi
-	fPressure = -mj / dPi * fPressure;
+	//fPressure = -mj / dPi * fPressure;
 	return fPressure;
 }
 
 glm::vec3 Particle::fViscosity()
 {
 	glm::vec3 sum(0.0f, 0.0f, 0.0f);
+	return sum;
 	glm::vec3 vi = localVelocity;
 	for (Particle *p : neighbors)
 	{
@@ -103,7 +106,7 @@ glm::vec3 Particle::fViscosity()
 		glm::vec3 vij = vi - vj;
 		glm::vec3 xij = (pos - p->pos);
 		sum += mj / pj * vij * 
-		(xij * Wgradient((vi-vj).length()/ hVal)) /
+		(xij * Wgradient(glm::length(xij)/ hVal)) /
 			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));
 
 	}
