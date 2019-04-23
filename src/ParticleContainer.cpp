@@ -1,7 +1,7 @@
 #include "ParticleContainer.h"
 #include "glm\gtx\norm.hpp"
 #define lambda 0.4
-
+#define BUFFER 0.5f
 
 ParticleContainer::ParticleContainer(int MAXPARTICLES)
 	: MAXPARTICLES(MAXPARTICLES)
@@ -10,26 +10,32 @@ ParticleContainer::ParticleContainer(int MAXPARTICLES)
 	float neg = 1;
 
 	int index = 0;
-	for (int i = 0; i < MAXPARTICLES / 2; i++)
+
+	for (int i = 0; i < MAXPARTICLES / 10; i++)
 	{
-		neg = -neg;
-		float x = -5.0f - (i*particleSize);
-		float y = 2.1f;
-		glm::vec3 pos(x, y, 1);
-		glm::vec3 vel(-50.0f,0.0f, 0.0f);
-		particles.push_back(Particle(pos, vel, index, 1.0f));
-		index++;
+		for (int j = 0; j < 5; j++)
+		{
+			float x = -5.0f - (i*(particleSize + BUFFER));
+			float y = 2.0f +(j*(particleSize+ BUFFER)) - (i*(particleSize + BUFFER));
+			glm::vec3 pos(x, y, 1);
+			glm::vec3 vel(-50.0f, -50.0f, 0);
+			particles.push_back(Particle(pos, vel, index, 1.0f));
+			index++;
+		}
 	}
-	for (int i = 0; i < MAXPARTICLES / 2; i++)
+	for (int i = 0; i < MAXPARTICLES / 10; i++)
 	{
-		neg = -neg;
-		float x = 5.0f + (i*particleSize);
-		float y = 2.0f;
-		glm::vec3 pos(x, y, 1);
-		glm::vec3 vel(50.0f, 0.0f, 0);
-		particles.push_back(Particle(pos, vel, index, 1.0f));
-		index++;
+		for (int j = 0; j < 5; j++)
+		{
+			float x = 5.0f + (i*(particleSize + BUFFER));
+			float y = 2.0f + (j*(particleSize + BUFFER)) - (i*(particleSize + BUFFER));
+			glm::vec3 pos(x, y, 1);
+			glm::vec3 vel(50.0f, -50.0f, 0);
+			particles.push_back(Particle(pos, vel, index, 1.0f));
+			index++;
+		}
 	}
+
 	grid->makeGrid(particles);
 
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <glm\common.hpp>
 #include <vector>
-#define particleSize 0.3f
+#define particleSize 0.2f
 #define _USE_MATH_DEFINES
 #include <math.h>
 

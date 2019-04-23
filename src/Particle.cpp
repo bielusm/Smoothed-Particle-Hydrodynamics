@@ -104,13 +104,12 @@ glm::vec3 Particle::fViscosity()
 		glm::vec3 vj = p->localVelocity;
 		glm::vec3 vij = vi - vj;
 		glm::vec3 xij = (pos - p->pos);
-		sum += mj / pj * vij * 
+		/*sum += mj / pj * vij * 
 		(xij * Wgradient(glm::length(xij)/ hVal)) /
-			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));
-
+			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));*/
+		sum += vij * mj / pj * WLaplacian(glm::length(xij)/hVal);
 	}
-	sum *= 2;
-	return mj * vis * sum;
+	return vis * sum;
 }
 
 glm::vec3 Particle::fOther()
@@ -130,7 +129,6 @@ float Particle::W(float q)
 	{
 		fq = 1.0f / 6.0f*pow(2.0f - q, 3);
 		fq *= 3.0f / 2.0f*M_PI;
-
 	}
 	else
 	{
@@ -185,20 +183,14 @@ float Particle::Wgradient(float q)
 
 void Particle::CalcVelocity(float dt)
 {
-		Fi.z = 0;
+		//Fi.z = 0;
 		localVelocity += dt * (Fi) / mj;
 }
 
 void Particle::CalcPosition(float dt)
 {
 	pos += dt * localVelocity;
-
-	if (pos.y < -20.0f)
-	{
-		localVelocity.y = -localVelocity.y/2;
-		pos.y = -20.0f;
-	}
-	}
+}
 
 
 
