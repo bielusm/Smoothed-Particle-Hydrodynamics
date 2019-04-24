@@ -35,6 +35,10 @@ public:
 	glm::vec2 Particle::fOther();
 
 	float poly6(float r);
+
+	float viscosityLap(float r);
+
+	float viscosityKernel(float r);
 	
 
 	

@@ -3,7 +3,7 @@
 #include "glm\glm.hpp"
 #include "Particle.h"
 #define d 2 // dimensionns
-#define p0 1000.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
+#define p0 998.29f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 #define k 3.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf table 3.2
 #define vis 3.5f //from  https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 #define g glm::vec2(0.0f,-9.81f)
@@ -84,7 +84,7 @@ void Particle::CalcImmediateDensity(float dt)
 	for (Particle *p : neighbors)
 	{
 		float xij = glm::length(pos - p->pos);
-		b += (immediateVel - p->immediateVel)*spikyGrad(xij / hVal);
+		b += (immediateVel - p->immediateVel)*Wgradient(xij/hVal);
 	}
 	sum = a + dt * b;
 	idPi = sum;
@@ -135,10 +135,9 @@ glm::vec2 Particle::fViscosity()
 		sum += mj / p0 * vij * 
 		(xij * spikyGrad(glm::length(xij))) /
 			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));
-	//	sum += vij * mj / p0 * WLaplacian(glm::length(xij)/hVal);
+		//sum += vij * mj / p0 * WLaplacian(glm::length(xij));
 	}
-	sum *= 2;
-	return mj *vis * sum;
+	return vis *mj* 2 * sum;
 }
 
 glm::vec2 Particle::fOther()
@@ -154,6 +153,13 @@ float Particle::poly6(float r)
 		/ (64.0f * M_PI*pow(hVal, 9));
 	kr *= pow(pow(hVal, 2) - pow(r, 2), 3);
 	return kr;
+}
+
+float Particle::viscosityLap(float r)
+{
+	if (r > hVal || r < 0)
+		return 0;
+	return 45.0f / (M_PI*pow(hVal, 6))*(hVal - r);
 }
 
 float Particle::spikyGrad(float r)
