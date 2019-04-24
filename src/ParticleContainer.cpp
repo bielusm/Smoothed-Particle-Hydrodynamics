@@ -7,36 +7,49 @@
 ParticleContainer::ParticleContainer(int MAXPARTICLES)
 	: MAXPARTICLES(MAXPARTICLES)
 {
-	grid = new Grid(-50.0f, 50.0f, -50.0f, 50.0f);
+	grid = new Grid(-500.0f, 500.0f, -500.0f, 500.0f);
 	float neg = 1;
 
 	int index = 0;
 
-	for (int i = 0; i < MAXPARTICLES/20; i++)
-	{
-
-		for (int j = 0; j < 20; j++)
-		{
-			float x = 0.0f + (j*(particleSize + BUFFER));
-			float y = -10.0f+ (i*(particleSize + BUFFER));
-			glm::vec3 pos(x, y, 1);
-			glm::vec3 vel(0.0f, 0.0f, 0);
-			particles.push_back(Particle(pos, vel, index, 1.0f));
-			index++;
-		}
-	}
-	//for (int i = 0; i < MAXPARTICLES / 10; i++)
+	//for (int i = 0; i < (MAXPARTICLES/2/20); i++)
 	//{
-	//	for (int j = 0; j < 5; j++)
+
+	//	for (int j = 0; j < 20; j++)
 	//	{
-	//		float x = 5.0f + (i*(particleSize + BUFFER));
-	//		float y = 2.0f + (j*(particleSize + BUFFER)) - (i*(particleSize + BUFFER));
+	//		float x = 0.0f + (j*(particleSize + BUFFER*4));
+	//		float y = 10.0f+ (i*(particleSize + BUFFER));
 	//		glm::vec3 pos(x, y, 1);
-	//		glm::vec3 vel(-50.0f, 50.0f, 0);
+	//		glm::vec3 vel(0.0f, 0.0f, 0);
 	//		particles.push_back(Particle(pos, vel, index, 1.0f));
 	//		index++;
 	//	}
 	//}
+	for (int i = 0; i < MAXPARTICLES / 2/2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			float x = -20.0f - (i*(particleSize + BUFFER));
+			float y = 2.0f + (j*(particleSize + BUFFER)) - (i*(particleSize + BUFFER));
+			glm::vec3 pos(x, y, 1);
+			glm::vec3 vel(100.0f, 100.0f, 0);
+			particles.push_back(Particle(pos, vel, index, 1.0f));
+			index++;
+		}
+	}
+
+	for (int i = 0; i < MAXPARTICLES /2/2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			float x = 20.0f + (i*(particleSize + BUFFER));
+			float y = 2.0f + (j*(particleSize + BUFFER)) - (i*(particleSize + BUFFER));
+			glm::vec3 pos(x, y, 1);
+			glm::vec3 vel(-100.0f, 100.0f, 0);
+			particles.push_back(Particle(pos, vel, index, 1.0f));
+			index++;
+		}
+	}
 
 	grid->makeGrid(particles);
 
