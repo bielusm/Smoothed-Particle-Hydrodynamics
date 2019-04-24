@@ -13,6 +13,8 @@ public:
 	Particle(glm::vec2 pos, glm::vec2 localVelocity, int index, float size);
 	~Particle();
 
+	float spikyGrad(float r);
+
 	float W(float q);
 	float Wgradient(float q);
 	float WLaplacian(float q);
@@ -31,6 +33,8 @@ public:
 	void Particle::fPressure();
 	glm::vec2 fViscosity();
 	glm::vec2 Particle::fOther();
+
+	float poly6(float r);
 	
 
 	

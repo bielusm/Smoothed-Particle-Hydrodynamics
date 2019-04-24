@@ -2,7 +2,7 @@
 #include <iostream>
 #include "glm\glm.hpp"
 #include "Particle.h"
-#define d 2 //2 dimensionns
+#define d 2 // dimensionns
 #define p0 1000.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 #define k 3.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf table 3.2
 #define vis 3.5f //from  https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
@@ -42,18 +42,18 @@ glm::vec2 Particle::PressurePi(glm::vec2 dPi)
 	return k * pressurePi - 1.0f;
 }
 
-glm::vec2 Particle::DensityPi()
-{
-
-	//Algorithm 1 2014 SPH STAR
-	glm::vec3 Pi = glm::vec3(0.0f, 0.0f, 0.0f);
-	for (Particle *j : neighbors)
-	{
-		float q = glm::length((pos - j->pos)) / hVal;
-		Pi += mj * W(q);
-	}
-	return Pi;
-}
+//glm::vec2 Particle::DensityPi()
+//{
+//
+//	//Algorithm 1 2014 SPH STAR
+//	glm::vec3 Pi = glm::vec3(0.0f, 0.0f, 0.0f);
+//	for (Particle *j : neighbors)
+//	{
+//		float q = glm::length((pos - j->pos)) / hVal;
+//		Pi += mj * poly6(q);
+//	}
+//	return Pi;
+//}
 
 //void Particle::CalcForces()
 //{
@@ -70,20 +70,23 @@ void Particle::CalcImmediateVelocity(float dt)
 void Particle::CalcImmediateDensity(float dt)
 {
 	glm::vec2 sum(0, 0);
-
+	float a = 0;
+	glm::vec2 b(0, 0);
 	for (Particle *p : neighbors)
 	{
 		float xij = glm::length(pos - p->pos);
-		float a;
-		glm::vec2 b(0,0);
-		a = mj * W(xij / hVal);
 
-		for (Particle *p : neighbors)
-		{
-			b += (immediateVel - p->immediateVel)*Wgradient(xij / hVal);
-		}
-		sum += a + dt * b;
+
+		a += mj * poly6(xij);
+
+	
 	}
+	for (Particle *p : neighbors)
+	{
+		float xij = glm::length(pos - p->pos);
+		b += (immediateVel - p->immediateVel)*spikyGrad(xij / hVal);
+	}
+	sum = a + dt * b;
 	idPi = sum;
 }
 
@@ -112,7 +115,7 @@ void Particle::fPressure()
 		Pj2 = glm::vec2(pow(Pj.x, 2), pow(Pj.y, 2));
 
 		a =  (Ai / Pi2 + Aj / Pj2)*mj;
-		b = Wgradient(glm::length(pos-p->pos) / hVal) ;
+		b = spikyGrad(glm::length(pos-p->pos));
 		pressureForce += a * b;
 	}
 	pressureForce *= -idPi;
@@ -125,14 +128,12 @@ glm::vec2 Particle::fViscosity()
 	glm::vec2 vi = localVelocity;
 	for (Particle *p : neighbors)
 	{
-		if (neighbors.size() > 3)
-			std::cout << "break here";
 		glm::vec2 pj = p->idPi;
 		glm::vec2 vj = p->localVelocity;
 		glm::vec2 vij = vi - vj;
 		glm::vec2 xij = (pos - p->pos);
 		sum += mj / p0 * vij * 
-		(xij * Wgradient(glm::length(xij)/ hVal)) /
+		(xij * spikyGrad(glm::length(xij))) /
 			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));
 	//	sum += vij * mj / p0 * WLaplacian(glm::length(xij)/hVal);
 	}
@@ -145,6 +146,23 @@ glm::vec2 Particle::fOther()
 	return p0* g;
 }
 
+float Particle::poly6(float r)
+{
+	if (r > hVal || r < 0)
+		return 0;
+	float kr = (315.0f)
+		/ (64.0f * M_PI*pow(hVal, 9));
+	kr *= pow(pow(hVal, 2) - pow(r, 2), 3);
+	return kr;
+}
+
+float Particle::spikyGrad(float r)
+{
+	if (r > hVal || r < 0)
+		return 0;
+	return -45.0f / (M_PI*pow(hVal, 6))*pow((hVal - r), 2);
+
+}
 float Particle::W(float q)
 {
 	float fq;

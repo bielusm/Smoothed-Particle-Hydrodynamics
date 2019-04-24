@@ -2,7 +2,7 @@
 #include "glm\gtx\norm.hpp"
 #include <iostream>
 #define lambda 0.4
-#define BUFFER 0.3f
+#define BUFFER 0.5f
 
 ParticleContainer::ParticleContainer(int MAXPARTICLES)
 	: MAXPARTICLES(MAXPARTICLES)
