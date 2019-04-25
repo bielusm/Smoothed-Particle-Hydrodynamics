@@ -143,9 +143,9 @@ glm::vec2 Particle::fViscosity()
 		glm::vec2 vij = vi - vj;
 		glm::vec2 xij = (pos - p->pos);
 		sum += mj / p0 * vij * 
-	/*	(xij * spikyGrad(abs(glm::length(xij)))) /
-			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));*/
-		sum += vij * mj / p0 * viscosityKernel(glm::length(xij));
+		(xij * spikyGrad(abs(glm::length(xij)))) /
+			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));
+		//sum += vij * mj / p0 * WLaplacian(glm::length(xij));
 	}
 	return vis *mj* 2 * sum;
 }
@@ -167,7 +167,7 @@ float Particle::poly6(float r)
 
 float Particle::viscosityLap(float r)
 {
-	if (abs(r) > hVal)
+	if (abs(r) > hVal )
 		return 0;
 	return 45.0f / (M_PI*pow(hVal, 6))*(hVal - abs(r));
 }

@@ -38,7 +38,6 @@ public:
 
 	float viscosityLap(float r);
 
-	float viscosityKernel(float r);
 	
 
 	
