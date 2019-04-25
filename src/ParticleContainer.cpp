@@ -55,21 +55,25 @@ ParticleContainer::ParticleContainer(int MAXPARTICLES)
 
 }
 
-
+static int timePassed = 0;
 void ParticleContainer::updateParticles(float dt)
 {
 
 
 		int i = 0;
+		int maxIndex = 0;
 		float maxVal2 = 0.0000000001;
 		for (Particle &p : particles)
 		{
 			p.clear();
 			findNeighbors(p, i);
-			i++;
 			float velLen2 = glm::length2(p.localVelocity);
 			if (velLen2 > maxVal2)
+			{
 				maxVal2 = velLen2;
+				maxIndex = i;
+			}
+			i++;
 		}
 		float  maxVal = sqrt(maxVal2);
 		float CFL = lambda * (hVal / maxVal);
@@ -92,26 +96,34 @@ void ParticleContainer::updateParticles(float dt)
 			p.CalcImmediateVelocity(stepVal);
 			index++;
 		}
+		index = 0;
 		for (Particle &p : particles)
 		{
-
+			if (index == 33)
+				std::cout << "";
 			p.CalcImmediateDensity(stepVal);
 			p.CalcPressure();
-		}
-
-		for (Particle &p : particles)
-		{
-			p.fPressure();
+			index++;
 		}
 		index = 0;
 		for (Particle &p : particles)
 		{
+			if (index == 33)
+				std::cout << "";
+			p.fPressure();
+			index++;
+		}
+		index = 0;
+		for (Particle &p : particles)
+		{
+
 			p.CalcVelocity(stepVal);
 			p.CalcPosition(stepVal);
 			glm::ivec2 gc  = grid->updateCoord(p.index, p.gridCoords, p.pos);
 			p.gridCoords = gc;
 			index++;
 		}
+		timePassed += stepVal;
 }
 
 void ParticleContainer::findNeighbors(Particle &p, int pIndex)
