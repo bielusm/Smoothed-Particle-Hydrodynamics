@@ -8,7 +8,7 @@
 #include <iostream>
 #include <math.h>
 #include "ParticleContainer.h"
-#include "Particle.h" //for hval maybe should have a header for param
+#include "Particle.h" //for hval
 
 #define MAXPARTICLES 2000
 
@@ -100,7 +100,6 @@ display( void )
 	particles.getPositions(positions);
 	glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
 	glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(GLfloat), &positions.front(), GL_STATIC_DRAW);
-	//glBufferSubData(GL_ARRAY_BUFFER, 0, positions.size() * sizeof(GLfloat), &positions.front());
 	glVertexAttribPointer(vPos, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 	glVertexAttribDivisor(vData, 0);
 	glVertexAttribDivisor(vPos, 1);

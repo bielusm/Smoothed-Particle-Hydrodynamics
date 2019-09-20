@@ -1,8 +1,6 @@
 #include "Grid.h"
 #include <iostream>
 
-
-
 //from https://stackoverflow.com/questions/10238699/dynamically-allocating-3d-array
 Grid::Grid(float left, float right, float top, float bottom)
 	:left(left), right(right), top(top), bottom(bottom)
@@ -22,10 +20,6 @@ Grid::~Grid()
 {
 	for (int i = 0; i < width; i++)
 	{
-		for (int j = 0; j < height; j++)
-		{
-	//		delete[] grid[i][j];
-		}
 		delete[] grid[i];
 	}
 	delete[] grid;

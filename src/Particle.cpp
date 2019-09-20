@@ -1,4 +1,3 @@
-//find new m4 kernel
 #include <iostream>
 #include "glm\glm.hpp"
 #include "Particle.h"
@@ -23,7 +22,6 @@ void Particle::CalcPressure()
 {
 	if (neighbors.size() > 0)
 	{
-		//dPi = DensityPi();
 		pressurePi = PressurePi(idPi);
 	}
 	else
@@ -41,24 +39,6 @@ glm::vec2 Particle::PressurePi(glm::vec2 dPi)
 	glm::vec2 pressurePi(x, y);
 	return k * (pressurePi - 1.0f);
 }
-
-//glm::vec2 Particle::DensityPi()
-//{
-//
-//	//Algorithm 1 2014 SPH STAR
-//	glm::vec3 Pi = glm::vec3(0.0f, 0.0f, 0.0f);
-//	for (Particle *j : neighbors)
-//	{
-//		float q = glm::length((pos - j->pos)) / hVal;
-//		Pi += mj * poly6(q);
-//	}
-//	return Pi;
-//}
-
-//void Particle::CalcForces()
-//{
-//	Fi = fPressure() + fViscosity() + fOther();
-//}
 
 void Particle::CalcImmediateVelocity(float dt)
 {
@@ -91,12 +71,9 @@ void Particle::CalcImmediateDensity(float dt)
 	idPi = sum;
 }
 
-//https://en.wikipedia.org/wiki/Smoothed-particle_hydrodynamics#Operators
-//equation for pressure gradient
-//also
-//https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf
-//equation 6 and algorithm 1
-//now https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
+
+
+//using https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 static int counter = 0;
 void Particle::fPressure()
 {
@@ -117,19 +94,14 @@ void Particle::fPressure()
 		Pj2 = glm::vec2(pow(Pj.x, 2), pow(Pj.y, 2));
 
 		a =  (Ai / Pi2 + Aj / Pj2)*mj;
-		b = spikyGrad((glm::length(pos-p->pos)));
+		b = spikyGrad((glm::length(pos-p->pos)/hVal));
 		pressureForce += a * b;
 		if (index == 33)
 		{
-			if (counter == 28)
-				std::cout << "break";
-			std::cout << counter;
 			counter++;
 		}
 	}
 	pressureForce *= -idPi;
-
-	//fPressure = -mj / dPi * fPressure;
 }
 
 glm::vec2 Particle::fViscosity()
@@ -142,12 +114,11 @@ glm::vec2 Particle::fViscosity()
 		glm::vec2 vj = p->localVelocity;
 		glm::vec2 vij = vi - vj;
 		glm::vec2 xij = (pos - p->pos);
-		sum += mj / p0 * vij * 
-		(xij * spikyGrad(abs(glm::length(xij)))) /
+		sum += (mj / p0) * vij * 
+		(xij * spikyGrad(glm::length(xij)/hVal)) /
 			(glm::dot(xij, xij) + (0.01f*pow(hVal, 2)));
-		//sum += vij * mj / p0 * WLaplacian(glm::length(xij));
 	}
-	return vis *mj* 2 * sum;
+	return  mj* vis* 2 * sum;
 }
 
 glm::vec2 Particle::fOther()
@@ -163,6 +134,15 @@ float Particle::poly6(float r)
 		/ (64.0f * M_PI*pow(hVal, 9));
 	kr *= pow(pow(hVal, 2) - pow(r, 2), 3);
 	return kr;
+}
+
+float Particle::viscosityGrad(float r)
+{
+	if (abs(r) > hVal)
+		return 0;
+	float c = 15.0f / (2.0f*M_PI*pow(hVal, 3));
+	float v = -(3 * abs(r) / 2 * pow(hVal, 3)) + (2 / pow(hVal, 2)) - (hVal / (2 * pow(abs(r), 3)));
+	return c * v;
 }
 
 float Particle::viscosityLap(float r)
@@ -219,7 +199,7 @@ float Particle::WLaplacian(float q)
 	return wq;
 }
 
-//I am just taking the derivative or maybe partial derivative of W (m4 cubic spline) i am not sure if this is correct
+//I am just taking the derivativeof W (m4 cubic spline) 
 //derived from https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf eq 5
 float Particle::Wgradient(float q)
 {
@@ -251,26 +231,6 @@ void Particle::CalcVelocity(float dt)
 void Particle::CalcPosition(float dt)
 {
 	pos += dt * localVelocity;
-	//if (pos.x < -10.0f)
-	//{
-	//	pos.x = -10.0f;
-	//	localVelocity.x = -localVelocity.x / absorbtion;
-	//}
-	//else if (pos.x > 10.0f)
-	//{
-	//	pos.x = 10.0f;
-	//	localVelocity.x = -localVelocity.x / absorbtion;
-	//}
-	//if (pos.y < -10.0f)
-	//{
-	//	pos.y = -10.0f;
-	//	localVelocity.y = -localVelocity.x / absorbtion;
-	//}
-	//if (pos.y > 20.0f)
-	//{
-	//	pos.y = 20.0f;
-	//	localVelocity.y = -localVelocity.x / absorbtion;
-	//}
 }
 
 

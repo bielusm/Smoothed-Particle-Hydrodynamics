@@ -20,14 +20,10 @@ public:
 	float WLaplacian(float q);
 	
 	glm::vec2 PressurePi(glm::vec2 pi);
-	void PressurePi();
-	glm::vec2 Particle::DensityPi();
 	void clear();
 	void addNeighbor(Particle *p);
-	void CalcForces();
 
 	void CalcImmediateVelocity(float dt);
-
 	void CalcImmediateDensity(float dt);
 
 	void Particle::fPressure();
@@ -36,17 +32,14 @@ public:
 
 	float poly6(float r);
 
+	float viscosityGrad(float r);
 	float viscosityLap(float r);
 
-	
-
-	
 	void Particle::CalcVelocity(float dt);
 	void Particle::CalcPosition(float dt);
 	
 	glm::vec2 localVelocity;
 	glm::vec2 immediateVel;
-	void PPE(float dt);
 	void CalcPressure();
 	glm::vec2 idPi;
 	glm::vec2 dPi;
@@ -59,9 +52,5 @@ public:
 	glm::vec2 pressurePi;
 	glm::ivec2 gridCoords;
 	int index;
-
-
-
-
 };
 
