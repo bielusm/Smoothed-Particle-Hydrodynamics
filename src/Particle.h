@@ -1,5 +1,6 @@
 #pragma once
 #include <glm\common.hpp>
+#include <glm\gtx\norm.hpp>
 #include <vector>
 #define particleSize 0.2f
 #define _USE_MATH_DEFINES

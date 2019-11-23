@@ -47,7 +47,7 @@ glm::ivec2 Grid::updateCoord(int index, glm::ivec2 gc, glm::vec2 newPos)
 		bool found = false;
 
 		std::vector<int> &indices = grid[gc.x][gc.y].index;
-		for (int i = 0; i < indices.size(); i++)
+		for (unsigned int i = 0; i < indices.size(); i++)
 		{
 			if (indices[i] == index)
 			{
@@ -104,7 +104,7 @@ std::vector<int> Grid::neighborIndices(Particle p)
 					if (inBounds(glm::vec2(x, y)))
 					{
 						std::vector <int> index = grid[x][y].index;
-						for (int i = 0; i < index.size(); i++)
+						for (unsigned int i = 0; i < index.size(); i++)
 						{
 							if (index[i] != p.index)
 								neighbors.push_back(index[i]);

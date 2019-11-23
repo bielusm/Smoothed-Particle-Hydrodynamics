@@ -22,7 +22,7 @@ static const GLfloat quad[]= {
 
 
 const char *WINDOW_TITLE = "Project";
-const double FRAME_RATE_MS = 1000.0/60.0;
+const int FRAME_RATE_MS = (int)(1000.0/60.0);
 
 
 GLuint vertexBuffer, positionBuffer;
@@ -33,7 +33,7 @@ GLuint vData, vPos, Size;
 GLuint vao;
 
 ParticleContainer particles(MAXPARTICLES);
-float prevTimeMs;
+int prevTimeMs;
 // OpenGL initialization
 void
 init()
@@ -85,8 +85,8 @@ init()
 void
 update(void)
 {
-	float currTimeMs = glutGet(GLUT_ELAPSED_TIME);
-	float dt = currTimeMs - prevTimeMs;
+	int currTimeMs = glutGet(GLUT_ELAPSED_TIME);
+	int dt = currTimeMs - prevTimeMs;
 	particles.updateParticles(dt);
 
 }

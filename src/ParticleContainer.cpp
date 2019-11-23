@@ -1,8 +1,8 @@
 #include "ParticleContainer.h"
-#include "glm\gtx\norm.hpp"
+#include <glm/glm.hpp>
 #include <iostream>
 #define lambda 0.4
-#define BUFFER 0.5f
+#define BUFFER 0.2f
 
 ParticleContainer::ParticleContainer(int MAXPARTICLES)
 	: MAXPARTICLES(MAXPARTICLES)
@@ -42,14 +42,12 @@ ParticleContainer::ParticleContainer(int MAXPARTICLES)
 
 }
 
-static int timePassed = 0;
-void ParticleContainer::updateParticles(float dt)
+static float timePassed = 0;
+void ParticleContainer::updateParticles(int dt)
 {
-
-
 		int i = 0;
 		int maxIndex = 0;
-		float maxVal2 = 0.0000000001;
+		float maxVal2 = 0.0000000001f;
 		for (Particle &p : particles)
 		{
 			p.clear();
@@ -66,26 +64,19 @@ void ParticleContainer::updateParticles(float dt)
 		float stepVal;
 
 		stepVal = 0.001f;
-		float index = 0;
 		for (Particle &p : particles)
 		{
 			p.CalcImmediateVelocity(stepVal);
-			index++;
 		}
-		index = 0;
 		for (Particle &p : particles)
 		{
 			p.CalcImmediateDensity(stepVal);
 			p.CalcPressure();
-			index++;
 		}
-		index = 0;
 		for (Particle &p : particles)
 		{
 			p.fPressure();
-			index++;
 		}
-		index = 0;
 		for (Particle &p : particles)
 		{
 
@@ -93,7 +84,6 @@ void ParticleContainer::updateParticles(float dt)
 			p.CalcPosition(stepVal);
 			glm::ivec2 gc  = grid->updateCoord(p.index, p.gridCoords, p.pos);
 			p.gridCoords = gc;
-			index++;
 		}
 		timePassed += stepVal;
 }
@@ -101,7 +91,7 @@ void ParticleContainer::updateParticles(float dt)
 void ParticleContainer::findNeighbors(Particle &p, int pIndex)
 {
 	std::vector<int> indices = grid->neighborIndices(p);
-	for (int i = 0; i < indices.size(); i++)
+	for (size_t i = 0; i < indices.size(); i++)
 	{
 			Particle *j = &particles[indices[i]];
 			if (glm::distance(p.pos, j->pos) < hVal)
