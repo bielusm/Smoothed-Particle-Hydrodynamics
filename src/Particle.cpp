@@ -1,12 +1,14 @@
 #include <iostream>
 #include "glm\glm.hpp"
 #include "Particle.h"
-#define d 2 // dimensionns
+#define d 2.0 // dimensionns
 #define p0 998.29f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 #define k 3.0f //from https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf table 3.2
 #define vis 3.5f //from  https://www10.cs.fau.de/publications/theses/2010/Staubach_BT_2010.pdf
 #define g glm::vec2(0.0f,-9.81f)
 #define absorbtion 10.0f
+#define PI (float)M_PI
+
 
 //IHMSEN M., CORNELIS J., SOLENTHALER B., HORVATH C., TESCHNER M.: Implicit incompressible SPH.IEEE
 //Transactions on Visualization and Computer Graphicss
@@ -14,7 +16,7 @@
 const float mj = pow(2.0f / 3.0f * hVal, 3)*p0;
 
 Particle::Particle(glm::vec2 pos, glm::vec2 localVelocity, int index, float size)
-	:pos(pos), localVelocity(localVelocity), index(index)
+	:pos(pos), localVelocity(localVelocity), index(index), size(size)
 {
 }
 
@@ -131,7 +133,7 @@ float Particle::poly6(float r)
 	if (r > hVal || r < 0)
 		return 0;
 	float kr = (315.0f)
-		/ (64.0f * M_PI*pow(hVal, 9));
+		/ (64.0f * PI*pow(hVal, 9));
 	kr *= pow(pow(hVal, 2) - pow(r, 2), 3);
 	return kr;
 }
@@ -140,7 +142,7 @@ float Particle::viscosityGrad(float r)
 {
 	if (abs(r) > hVal)
 		return 0;
-	float c = 15.0f / (2.0f*M_PI*pow(hVal, 3));
+	float c = 15.0f / (2.0f*PI*pow(hVal, 3));
 	float v = -(3 * abs(r) / 2 * pow(hVal, 3)) + (2 / pow(hVal, 2)) - (hVal / (2 * pow(abs(r), 3)));
 	return c * v;
 }
@@ -149,14 +151,14 @@ float Particle::viscosityLap(float r)
 {
 	if (abs(r) > hVal )
 		return 0;
-	return 45.0f / (M_PI*pow(hVal, 6))*(hVal - abs(r));
+	return 45.0f / (PI*pow(hVal, 6))*(hVal - abs(r));
 }
 
 float Particle::spikyGrad(float r)
 {
 	if (abs(r) > hVal)
 		return 0;
-	return -45.0f / (M_PI*pow(hVal, 6))*pow((hVal - r), 2);
+	return -45.0f / (PI*pow(hVal, 6))*pow((hVal - r), 2);
 
 }
 float Particle::W(float q)
@@ -165,12 +167,12 @@ float Particle::W(float q)
 	if (0 <= q && q < 1)
 	{
 		fq = 2.0f / 3.0f - pow(q, 2) + 1.0f / 2.0f*pow(q, 3);
-		fq *= 10.0f / 7.0f*M_PI;
+		fq *= 10.0f / 7.0f*PI;
 	}
 	else if (1 <= q && q < 2)
 	{
 		fq = 1.0f / 6.0f*pow(2.0f - q, 3);
-		fq *= 10.0f / 7.0f*M_PI;
+		fq *= 10.0f / 7.0f*PI;
 	}
 	else
 	{
@@ -195,7 +197,7 @@ float Particle::WLaplacian(float q)
 	{
 		return 0;
 	}
-	float wq = (1.0f / pow(hVal, d))*10.0f / (7.0f*M_PI)*fq;
+	float wq = (1.0f / (float)pow(hVal, d))*10.0f / (7.0f*PI)*fq;
 	return wq;
 }
 
@@ -216,7 +218,7 @@ float Particle::Wgradient(float q)
 	{
 		return 0;
 	}
-	float wq = (1.0f / pow(hVal, d))*10.0f / (7.0f*M_PI)*fq;
+	float wq = (1.0f / powf(hVal, d))*10.0f / (7.0f*PI)*fq;
 	return wq;
 }
 

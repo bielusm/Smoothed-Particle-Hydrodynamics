@@ -10,7 +10,7 @@
 #include "ParticleContainer.h"
 #include "Particle.h" //for hval
 
-#define MAXPARTICLES 2000
+#define MAXPARTICLES 200
 
 
 static const GLfloat quad[]= {
